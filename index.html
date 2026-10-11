@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#172b4d">
+    <meta name="description" content="مغامرة تعليمية تفاعلية لاستكشاف محافظة العاصمة ومعالمها لطلاب الصف الخامس.">
+    <title>مغامرو العاصمة عمّان — كنوز التاريخ والحضارة</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="#" aria-label="مغامرو العاصمة عمّان">
+                <span class="brand-mark" aria-hidden="true">ع</span>
+                <span><strong>مغامرو العاصمة عمّان</strong><small>كنوز التاريخ والحضارة</small></span>
+            </a>
+            <div class="lesson-tag"><span>الدراسات الاجتماعية</span><b>الصف الخامس</b></div>
+            <div class="top-actions">
+                <button class="icon-button" id="help-button" type="button" aria-label="تعليمات اللعب">؟</button>
+                <button class="icon-button" id="reset-button" type="button" aria-label="بدء مغامرة جديدة">↻</button>
+            </div>
+        </header>
+
+        <section class="game-layout" aria-label="لعبة مغامرو العاصمة عمّان">
+            <div class="world-column">
+                <div class="world-heading">
+                    <div><span class="eyebrow">رحلة ميدانية افتراضية</span><h1>استكشف عمّان، واجمع حكاياتها</h1></div>
+                    <div class="score-pill"><span aria-hidden="true">✦</span><span id="score-value">٠</span><small>نقطة</small></div>
+                </div>
+                <div class="world-frame" id="world-frame">
+                    <canvas id="game-canvas" aria-label="عالم عمّان التفاعلي. حرّك شخصيتك لاستكشاف المعالم."></canvas>
+                    <div class="world-badge"><span class="live-dot"></span><span id="zone-name">بوابة العاصمة</span></div>
+                    <div class="mini-map" aria-label="خريطة مصغرة للعالم">
+                        <canvas id="map-canvas" aria-label="موقعك والمعالم التي اكتشفتها"></canvas>
+                        <span>خريطة الرحلة</span>
+                    </div>
+                    <div class="interaction-hint" id="interaction-hint" hidden><kbd>E</kbd><span id="hint-label">تفاعل</span></div>
+                    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+                    <div class="start-screen" id="start-screen">
+                        <div class="start-card">
+                            <span class="start-emblem" aria-hidden="true">✦</span>
+                            <p class="eyebrow">مهمة جديدة · عمّان، الأردن</p>
+                            <h2>أهلًا بك، أيها المستكشف!</h2>
+                            <p>تجوّل في عالم عمّان، قابل أهلها، واكتشف الأدلة التي تحكي تاريخ العاصمة. كل معلم تراه هو خطوة جديدة في مغامرتك.</p>
+                            <label for="player-name">اسم المستكشف <span>(اختياري)</span></label>
+                            <input id="player-name" type="text" maxlength="30" autocomplete="name" placeholder="اكتب اسمك">
+                            <label for="player-color">لون شخصية المستكشف</label>
+                            <select id="player-color">
+                                <option value="#f2bd83">اللون الرملي</option>
+                                <option value="#8dcac2">اللون الفيروزي</option>
+                                <option value="#ada4ee">اللون البنفسجي</option>
+                                <option value="#ef9d9f">اللون المرجاني</option>
+                            </select>
+                            <button class="primary-button" id="start-button" type="button">ابدأ الاستكشاف <span aria-hidden="true">←</span></button>
+                            <small class="saved-note" id="saved-note" hidden>لديك مغامرة محفوظة. يمكنك متابعة رحلتك.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="mobile-controls" aria-label="أزرار تحريك الشخصية">
+                    <div class="dpad">
+                        <button type="button" data-move="up" aria-label="تحرك إلى الأمام">▲</button>
+                        <button type="button" data-move="left" aria-label="تحرك إلى اليسار">◀</button>
+                        <button type="button" data-move="down" aria-label="تحرك إلى الخلف">▼</button>
+                        <button type="button" data-move="right" aria-label="تحرك إلى اليمين">▶</button>
+                    </div>
+                    <button class="interact-button" id="mobile-interact" type="button"><span aria-hidden="true">✦</span> تفاعل</button>
+                </div>
+                <div class="control-legend"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> أو الأسهم للتحرك</span><span><kbd>E</kbd> للتحدث وجمع الأدلة</span></div>
+            </div>
+
+            <aside class="mission-panel" aria-label="المهمات والتقدم">
+                <div class="panel-title"><div><span class="eyebrow">دفتر المستكشف</span><h2>مهمتي الآن</h2></div><span class="mission-icon" aria-hidden="true">✧</span></div>
+                <div class="current-mission" id="current-mission"></div>
+                <div class="progress-track" aria-label="التقدم في المغامرة"><div class="progress-fill" id="progress-fill"></div></div>
+                <p class="progress-label" id="progress-label">٠ من ١١ موقعًا مكتشفًا</p>
+                <div class="panel-divider"></div>
+                <div class="panel-subtitle"><h3>دليلي الميداني</h3><span class="evidence-count" id="evidence-count">٠</span></div>
+                <ul class="evidence-list" id="evidence-list"><li class="empty-evidence">ستظهر هنا الأدلة التي تجمعها.</li></ul>
+                <div class="panel-divider"></div>
+                <div class="guide-tip"><span aria-hidden="true">💡</span><p id="guide-tip">اقترب من الشخصية أو المعلم، ثم اضغط <kbd>E</kbd> لتكتشف قصته.</p></div>
+                <button class="report-button" id="report-button" type="button" disabled>عرض سجل الإنجاز <span aria-hidden="true">↗</span></button>
+            </aside>
+        </section>
+        <footer class="site-footer"><span>إعداد المعلم: <b>عامر كراجه</b> · مدرسة ذكور وادي السير الإعدادية</span><span>المصدر: كتاب الدراسات الاجتماعية للصف الخامس، ص ٥٤–٦١</span></footer>
+    </main>
+
+    <dialog class="story-dialog" id="story-dialog" aria-labelledby="dialog-title">
+        <form method="dialog" class="dialog-card">
+            <button class="dialog-close" value="close" aria-label="إغلاق">×</button>
+            <span class="dialog-kicker" id="dialog-kicker">دليل ميداني</span>
+            <h2 id="dialog-title"></h2>
+            <p id="dialog-copy"></p>
+            <div class="dialog-fact" id="dialog-fact"></div>
+            <button class="primary-button dialog-action" id="dialog-action" value="close" type="button">سجّل الاكتشاف <span aria-hidden="true">✦</span></button>
+        </form>
+    </dialog>
+
+    <dialog class="story-dialog puzzle-dialog" id="puzzle-dialog" aria-labelledby="puzzle-title">
+        <form method="dialog" class="dialog-card">
+            <button class="dialog-close" value="close" aria-label="إغلاق">×</button>
+            <span class="dialog-kicker">مهمة الأرشيف · رتّب الأدلة</span>
+            <h2 id="puzzle-title">أعد بناء خطّ الزمن</h2>
+            <p>رتّب محطات الرحلة من الأقدم إلى الأحدث. انقر بطاقةً ثم مكانها في التسلسل.</p>
+            <div class="timeline-slots" id="timeline-slots" aria-label="ترتيب محطات الخط الزمني"></div>
+            <div class="timeline-cards" id="timeline-cards" aria-label="بطاقات الأحداث"></div>
+            <p class="puzzle-feedback" id="puzzle-feedback" aria-live="polite"></p>
+            <button class="primary-button dialog-action" id="timeline-submit" type="button">تحقّق من الترتيب <span aria-hidden="true">✓</span></button>
+        </form>
+    </dialog>
+
+    <dialog class="story-dialog report-dialog" id="report-dialog" aria-labelledby="report-title">
+        <div class="dialog-card">
+            <button class="dialog-close" id="report-close" type="button" aria-label="إغلاق">×</button>
+            <span class="dialog-kicker">وثيقة المستكشف</span>
+            <h2 id="report-title">سجل إنجاز الرحلة</h2>
+            <div id="report-content"></div>
+            <button class="primary-button dialog-action" id="print-button" type="button">اطبع سجل الإنجاز <span aria-hidden="true">⎙</span></button>
+        </div>
+    </dialog>
+
+    <dialog class="story-dialog help-dialog" id="help-dialog" aria-labelledby="help-title">
+        <form method="dialog" class="dialog-card">
+            <button class="dialog-close" value="close" aria-label="إغلاق">×</button>
+            <span class="dialog-kicker">دليل اللعب</span>
+            <h2 id="help-title">كيف تصبح مستكشفًا؟</h2>
+            <p>تحرّك في العالم باستخدام W A S D أو الأسهم. على الهاتف استخدم أزرار الاتجاهات. اقترب من الشخصيات والمعالم حتى تظهر إشارة التفاعل، ثم اضغط E أو زر «تفاعل» لتسمع الحكاية وتسجّل الدليل.</p>
+            <p>أنجز كل مواقع المنطقة لتُفتح البوابة التالية. تقدّمك يُحفظ تلقائيًا على هذا الجهاز؛ وفي نهاية الجولة رتّب بطاقات الزمن ثم اطبع سجل إنجازك.</p>
+            <button class="primary-button dialog-action" value="close">إلى المغامرة!</button>
+        </form>
+    </dialog>
+
+    <script src="script.js"></script>
+</body>
+</html>
